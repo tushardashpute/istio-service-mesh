@@ -12,3 +12,8 @@ The following diagram shows the service access relationship in Kubernetes and se
 
 
 <img width="1366" alt="image" src="https://user-images.githubusercontent.com/74225291/163709184-271be4aa-31a1-48e1-bc88-5e907d03867f.png">
+
+
+Kiali Dashboard:
+
+<img width="1531" alt="image" src="https://user-images.githubusercontent.com/74225291/163760694-3f7ca0a8-1685-4c66-aabe-66f07b9b951b.png">
