@@ -1,6 +1,4 @@
 # istio-service-mesh
-istio-service-mesh
-
 
 Kubernetes is essentially about application lifecycle management through declarative configuration, while a service mesh is essentially about providing inter-application traffic, security management and observability. If you have already built a stable application platform using Kubernetes, how do you set up load balancing and traffic control for calls between services? This is where a service mesh comes into the picture.
 
@@ -15,19 +13,19 @@ The following diagram shows the service access relationship in Kubernetes and se
 
 **Create nginx ingress controller**
 
-    # k apply -f mandatory.yaml 
+    # kubectl apply -f nginx-ingress-controller/mandatory.yaml 
 
-    # k apply -f ingress-service.yaml 
+    # kubectl apply -f nginx-ingress-controller/ingress-service.yaml 
 
-    # k  get pods -n ingress-nginx
+    # kubectl get pods -n ingress-nginx
     NAME                                        READY   STATUS    RESTARTS   AGE
     nginx-ingress-controller-65886f4f5d-4l7tz   1/1     Running   0          31s
-    [root@ip-172-31-18-204 nginx-ingress-controller]# k get svc -n ingress-nginx
+    
+    # kubectl get svc -n ingress-nginx
     NAME            TYPE           CLUSTER-IP     EXTERNAL-IP                                                               PORT(S)                      AGE
     ingress-nginx   LoadBalancer   10.100.20.83   abf852d2471084b5c91c8315b3c804ea-1090491327.us-east-2.elb.amazonaws.com   80:31978/TCP,443:31823/TCP   31s
 
 **Deploy the sample application**
-
 
     # kubectl apply -f yelb_initial_deployment.yaml
 
@@ -44,7 +42,7 @@ The following diagram shows the service access relationship in Kubernetes and se
     pod/yelb-db-694586cd78-2x4xr         1/1     Running   0          35s
     pod/yelb-ui-798667d648-qz88h         1/1     Running   0          35s
     
-    # k get ing -n yelb
+    # kubectl get ing -n yelb
     NAME           CLASS    HOSTS   ADDRESS                                                                   PORTS   AGE
     yelb-ingress   <none>   *       abf852d2471084b5c91c8315b3c804ea-1090491327.us-east-2.elb.amazonaws.com   80      139m
 
@@ -64,12 +62,13 @@ Here we are installing it using istioctl, we can install it using helm as well. 
 Go to the Istio release page to download the installation file for your OS, or download and extract the latest release automatically (Linux or macOS):
 
     curl -L https://istio.io/downloadIstio | sh -
-    cd istio-1.13.2
+    mv istio-* istio
+    cd istio
     export PATH=$PWD/bin:$PATH
 
 **Install Istio**
 
-    $ istioctl install --set profile=demo -y
+    # istioctl install --set profile=demo -y
     
       ✔ Istio core installed
       ✔ Istiod installed
@@ -79,7 +78,13 @@ Go to the Istio release page to download the installation file for your OS, or d
 
 Add a namespace label to instruct Istio to automatically inject Envoy sidecar proxies when you deploy your application later:
 
-    kubectl label namespace yelb istio-injection=enabled
+    # k get pods -n istio-system
+    NAME                                    READY   STATUS    RESTARTS   AGE
+    istio-egressgateway-66fdd867f4-b2q4k    1/1     Running   0          2m49s
+    istio-ingressgateway-77968dbd74-9sm4r   1/1     Running   0          2m49s
+    istiod-699b647f8b-jrjkt                 1/1     Running   0          2m49s
+
+    # kubectl label namespace yelb istio-injection=enabled
 
 Now as we have installed istio and enabled istio-injection lable for yelb namespace as well. We need to delete the extisting pods, so that new pods will spawn with envoy sidecar attached to it.
 
@@ -110,6 +115,35 @@ Now we need to create gateway and virtualservice for it, so that we can access i
       # k get vs -n yelb
       NAME   GATEWAYS           HOSTS   AGE
       yelb   ["yelb-gateway"]   ["*"]   6s
+
+You can access the Application using below istio=ingressgateway LB address:
+
+      # kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 
+        a2f0aa20284dc47afbf19fbc8cd7b9f5-1943953229.us-east-2.elb.amazonaws.com
+
+**View the dashboard**
+
+Istio integrates with several different telemetry applications. These can help you gain an understanding of the structure of your service mesh, display the topology of the mesh, and analyze the health of your mesh.
+
+Use the following instructions to deploy the Kiali dashboard, along with Prometheus, Grafana, and Jaeger.
+
+    # kubectl apply -f /opt/istio/samples/addons
+    # kubectl rollout status deployment/kiali -n istio-system
+
+Now edit the kiali service and change its type to LoadBalancer.
+
+        # kubectl get svc -n istio-system
+        NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP                                                               PORT(S)                                                                      AGE
+        grafana                ClusterIP      10.100.83.37     <none>                                                                    3000/TCP                                                                     3h44m
+        istio-egressgateway    ClusterIP      10.100.39.250    <none>                                                                    80/TCP,443/TCP                                                               3h57m
+        istio-ingressgateway   LoadBalancer   10.100.220.28    a2f0aa20284dc47afbf19fbc8cd7b9f5-1943953229.us-east-2.elb.amazonaws.com   15021:32667/TCP,80:31174/TCP,443:31608/TCP,31400:30472/TCP,15443:31565/TCP   3h57m
+        istiod                 ClusterIP      10.100.62.148    <none>                                                                    15010/TCP,15012/TCP,443/TCP,15014/TCP                                        3h58m
+        jaeger-collector       ClusterIP      10.100.196.33    <none>                                                                    14268/TCP,14250/TCP,9411/TCP                                                 3h44m
+        kiali                  LoadBalancer   10.100.7.106     a0243cbc3413f457ca2f6094d4a27c59-18057384.us-east-2.elb.amazonaws.com     20001:32296/TCP,9090:30614/TCP                                               3h44m
+        prometheus             ClusterIP      10.100.65.138    <none>                                                                    9090/TCP                                                                     3h44m
+        tracing                ClusterIP      10.100.249.251   <none>                                                                    80/TCP,16685/TCP                                                             3h44m
+        zipkin                 ClusterIP      10.100.245.242   <none>                                                                    9411/TCP         
+Now access the kiali dashboard using: "http://LB_url:20001"
 
 Kiali Dashboard:
 
