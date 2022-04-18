@@ -13,6 +13,8 @@ The following diagram shows the service access relationship in Kubernetes and se
 
 **Create nginx ingress controller**
 
+Clone the git repo.
+
     # kubectl apply -f nginx-ingress-controller/mandatory.yaml 
 
     # kubectl apply -f nginx-ingress-controller/ingress-service.yaml 
@@ -78,7 +80,7 @@ Go to the Istio release page to download the installation file for your OS, or d
 
 Add a namespace label to instruct Istio to automatically inject Envoy sidecar proxies when you deploy your application later:
 
-    # k get pods -n istio-system
+    # kubectl get pods -n istio-system
     NAME                                    READY   STATUS    RESTARTS   AGE
     istio-egressgateway-66fdd867f4-b2q4k    1/1     Running   0          2m49s
     istio-ingressgateway-77968dbd74-9sm4r   1/1     Running   0          2m49s
@@ -88,13 +90,13 @@ Add a namespace label to instruct Istio to automatically inject Envoy sidecar pr
 
 Now as we have installed istio and enabled istio-injection lable for yelb namespace as well. We need to delete the extisting pods, so that new pods will spawn with envoy sidecar attached to it.
 
-    # k delete pod redis-server-74556bbcb7-9rg8x yelb-appserver-d584bb889-b2qdd yelb-db-694586cd78-2x4xr yelb-ui-798667d648-qz88h   -n yelb
+    # kubectl delete pod redis-server-74556bbcb7-9rg8x yelb-appserver-d584bb889-b2qdd yelb-db-694586cd78-2x4xr yelb-ui-798667d648-qz88h   -n yelb
     pod "redis-server-74556bbcb7-9rg8x" deleted
     pod "yelb-appserver-d584bb889-b2qdd" deleted
     pod "yelb-db-694586cd78-2x4xr" deleted
     pod "yelb-ui-798667d648-qz88h" deleted
     
-    # k get pods -n yelb
+    # kubectl get pods -n yelb
     NAME                             READY   STATUS    RESTARTS   AGE
     redis-server-74556bbcb7-wj5x7    2/2     Running   0          45s
     yelb-appserver-d584bb889-tx68m   2/2     Running   0          45s
@@ -104,15 +106,15 @@ Now as we have installed istio and enabled istio-injection lable for yelb namesp
 Now we need to create gateway and virtualservice for it, so that we can access it using istio ingress.
 
 
-      # k apply -f yelb-gateway.yaml  -n yelb
+      # kubectl apply -f yelb-gateway.yaml  -n yelb
       gateway.networking.istio.io/yelb-gateway created
       virtualservice.networking.istio.io/yelb created
       
-      # k get gateway -n yelb
+      # kubectl get gateway -n yelb
       NAME           AGE
       yelb-gateway   6s
 
-      # k get vs -n yelb
+      # kubectl get vs -n yelb
       NAME   GATEWAYS           HOSTS   AGE
       yelb   ["yelb-gateway"]   ["*"]   6s
 
