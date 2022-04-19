@@ -65,7 +65,7 @@ Go to the Istio release page to download the installation file for your OS, or d
 
     cd /opt
     curl -L https://istio.io/downloadIstio | sh -
-    mv istio-* istio
+    mv istio-1* istio
     cd istio
     export PATH=$PWD/bin:$PATH
 
