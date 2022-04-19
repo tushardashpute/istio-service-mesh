@@ -63,6 +63,7 @@ Here we are installing it using istioctl, we can install it using helm as well. 
 
 Go to the Istio release page to download the installation file for your OS, or download and extract the latest release automatically (Linux or macOS):
 
+    cd /opt
     curl -L https://istio.io/downloadIstio | sh -
     mv istio-* istio
     cd istio
