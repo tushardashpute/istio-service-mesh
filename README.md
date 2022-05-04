@@ -17,12 +17,12 @@ The following diagram shows the service access relationship in Kubernetes and se
 
             Kubernetes	  |  Istio service mesh
             --------------|--------------------
-            Endpoint	  |  WorkloadEntry
-            Service	  |  VirtualService
+            Endpoint.     |  WorkloadEntry
+            Service.      |  VirtualService
             kube-proxy	  |  DestinationRule
             kube-proxy	  |  EnvoyFilter
-            Ingress	  |  Gateway
-            Service	  |  ServiceEntry
+            Ingress       |  Gateway
+            Service.      |  ServiceEntry
 
 **Create nginx ingress controller**
 
