@@ -15,7 +15,7 @@ The following diagram shows the service access relationship in Kubernetes and se
 **Kubernetes v/s Service mess**
 
 
-            Kubernetes	  |  Istio service mesh
+            Kubernetes    |  Istio service mesh
             --------------|--------------------
             Endpoint      |  WorkloadEntry
             Service       |  VirtualService
